@@ -84,6 +84,7 @@ export async function generateContent(prevState: State, formData: FormData): Pro
             if (!process.env.GOOGLE_API_KEY) {
                 return { success: false, message: 'Google API Key fehlt. Bitte füge GOOGLE_API_KEY zur .env Datei hinzu.' }
             }
+            console.log('DEBUG: API Key ends with:', process.env.GOOGLE_API_KEY?.trim().slice(-4));
             const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY)
             const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash', generationConfig: { responseMimeType: 'application/json' } })
 
