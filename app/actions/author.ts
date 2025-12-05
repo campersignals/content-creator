@@ -5,9 +5,14 @@ import { revalidatePath } from 'next/cache'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
 export async function getAuthors() {
-    return await prisma.author.findMany({
-        orderBy: { createdAt: 'desc' },
-    })
+    try {
+        return await prisma.author.findMany({
+            orderBy: { createdAt: 'desc' },
+        })
+    } catch (error) {
+        console.error('Failed to fetch authors:', error)
+        return []
+    }
 }
 
 export async function deleteAuthor(id: string) {

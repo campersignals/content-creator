@@ -6,9 +6,14 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 export async function getContents() {
-    return await prisma.generatedContent.findMany({
-        orderBy: { createdAt: 'desc' },
-    })
+    try {
+        return await prisma.generatedContent.findMany({
+            orderBy: { createdAt: 'desc' },
+        })
+    } catch (error) {
+        console.error('Failed to fetch contents:', error)
+        return []
+    }
 }
 
 export async function deleteContent(id: string) {
