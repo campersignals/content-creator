@@ -34,8 +34,8 @@ export default function AuthorsPage() {
     const [editingAuthor, setEditingAuthor] = useState<any | null>(null)
 
     // We need separate form actions for create and update
-    const [createState, createAction] = useFormState(createAuthor, { success: false, message: null })
-    const [updateState, updateAction] = useFormState(updateAuthor, { success: false, message: null })
+    const [createState, createAction] = useFormState(createAuthor, { success: false, message: '' })
+    const [updateState, updateAction] = useFormState(updateAuthor, { success: false, message: '' })
 
     const formRef = useRef<HTMLFormElement>(null)
 

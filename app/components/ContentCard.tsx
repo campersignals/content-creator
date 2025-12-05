@@ -15,6 +15,7 @@ interface ContentCardProps {
         youtubeCommunityText: string
         teaser: string
         hashtags: string
+        imageUrl?: string | null
         createdAt: Date
     }
 }
