@@ -1,4 +1,4 @@
-const apiKey = "AIzaSyB3M1ylmP7HciWfJa_vFckNf_F0aIht1Go";
+const apiKey = process.env.GOOGLE_API_KEY;
 
 async function generateImage() {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${apiKey}`;
