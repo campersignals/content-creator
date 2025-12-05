@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model GeneratedContent {
+  id        String   @id @default(uuid())
+  keywords  String
+  blogText  String
+  instaText String
+  tiktokText String
+  youtubeCommunityText String @default("")
+  teaser    String   @default("")
+  hashtags  String
+  imageUrl  String?
+  createdAt DateTime @default(now())
+}
+
+model Author {
+  id        String   @id @default(uuid())
+  name      String
+  url       String?
+  style     String   @default("")
+  createdAt DateTime @default(now())
+}
