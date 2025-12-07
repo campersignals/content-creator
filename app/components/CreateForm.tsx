@@ -35,7 +35,7 @@ function SubmitButton() {
 export default function CreateForm() {
     const initialState: State = { success: false, message: null }
     const [state, formAction] = useFormState(generateContent, initialState)
-    const [provider, setProvider] = useState('openai')
+    const [provider, setProvider] = useState('gemini')
     const [authors, setAuthors] = useState<any[]>([])
     const router = useRouter()
 

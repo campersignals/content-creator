@@ -90,7 +90,24 @@ export async function generateContent(prevState: State, formData: FormData): Pro
 
             const result = await model.generateContent(prompt)
             const response = await result.response
-            content = JSON.parse(response.text())
+            let text = response.text()
+
+            // Clean up markdown formatting if present
+            text = text.replace(/```json/g, '').replace(/```/g, '').trim()
+
+            try {
+                content = JSON.parse(text)
+            } catch (jsonError) {
+                console.error('JSON Parse Error:', jsonError)
+                console.error('Raw content:', text)
+                // Attempt to repair common JSON issues (basic attempt)
+                const repairedText = text.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']')
+                try {
+                    content = JSON.parse(repairedText)
+                } catch (retryError) {
+                    throw new Error('Empfangenes Format war kein gültiges JSON. Bitte versuche es erneut.')
+                }
+            }
         } else {
             const openai = new OpenAI({
                 apiKey: process.env.OPENAI_API_KEY,
@@ -102,46 +119,55 @@ export async function generateContent(prevState: State, formData: FormData): Pro
                 response_format: { type: 'json_object' },
             })
 
-            content = JSON.parse(completion.choices[0].message.content || '{}')
+            let openAiContent = completion.choices[0].message.content || '{}'
+            // Clean up potential markdown formatting from OpenAI as well
+            openAiContent = openAiContent.replace(/```json/g, '').replace(/```/g, '').trim()
+            content = JSON.parse(openAiContent)
         }
 
         // Image Generation
         let imageUrl = null
         const generateImage = formData.get('generateImage') === 'on'
 
-        if (generateImage && process.env.GOOGLE_API_KEY) {
-            try {
-                const imagePrompt = `High quality, photorealistic image for social media about: ${keywords}. Style: ${Number(style) > 3 ? 'creative, artistic' : 'professional, clean'}.`
+        if (generateImage) {
+            if (!process.env.GOOGLE_API_KEY) {
+                console.warn('Skipping image generation: GOOGLE_API_KEY is missing.')
+            } else {
+                try {
+                    const imagePrompt = `High quality, photorealistic image for social media about: ${keywords}. Style: ${Number(style) > 3 ? 'creative, artistic' : 'professional, clean'}.`
 
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${process.env.GOOGLE_API_KEY}`
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${process.env.GOOGLE_API_KEY}`
 
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        instances: [{ prompt: imagePrompt }],
-                        parameters: { sampleCount: 1, aspectRatio: '1:1' }
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            instances: [{ prompt: imagePrompt }],
+                            parameters: { sampleCount: 1, aspectRatio: '1:1' }
+                        })
                     })
-                })
 
-                const data = await response.json()
-
-                if (data.predictions && data.predictions[0]?.bytesBase64Encoded) {
-                    const base64Data = data.predictions[0].bytesBase64Encoded
-                    const filename = `${crypto.randomUUID()}.png`
-                    const filepath = path.join(process.cwd(), 'public', 'generated-images', filename)
-
-                    // Ensure directory exists
-                    const dir = path.dirname(filepath)
-                    if (!fs.existsSync(dir)) {
-                        fs.mkdirSync(dir, { recursive: true });
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        console.error('Imagen API Error Data:', JSON.stringify(errorData, null, 2));
+                        throw new Error(`Imagen API Error: ${response.status} ${response.statusText} - ${errorData.error?.message || 'Unknown error'}`);
                     }
 
-                    fs.writeFileSync(filepath, base64Data, 'base64')
-                    imageUrl = `/generated-images/${filename}`
+                    const data = await response.json()
+
+                    if (data.predictions && data.predictions[0]?.bytesBase64Encoded) {
+                        const base64Data = data.predictions[0].bytesBase64Encoded
+
+                        // Ensure directory exists
+                        // Store as Data URL directly in DB (Vercel filesystem is ephemeral)
+                        // This handles small-medium images. For production large scale, use Vercel Blob.
+                        imageUrl = `data:image/png;base64,${base64Data}`
+                    } else {
+                        console.error('Image generation response invalid:', JSON.stringify(data, null, 2))
+                    }
+                } catch (error) {
+                    console.error('Image generation failed for this request:', error)
                 }
-            } catch (error) {
-                console.error('Image generation failed:', error)
             }
         }
 

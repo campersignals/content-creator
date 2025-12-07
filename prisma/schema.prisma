@@ -19,6 +19,9 @@ model GeneratedContent {
   teaser    String   @default("")
   hashtags  String
   imageUrl  String?
+  videoUrl  String?
+  videoStatus String? // 'IDLE', 'GENERATING', 'COMPLETED', 'FAILED'
+  videoOperationName String? // Google Long Running Operation Name
   createdAt DateTime @default(now())
 }
 

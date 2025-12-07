@@ -5,7 +5,7 @@ async function generateImage() {
     // Trying imagen-3.0 first as it's more likely to be stable, or check the list again.
     // The list had: models/imagen-4.0-generate-001 (predict)
 
-    const url4 = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
+    const url4 = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${apiKey}`;
 
     console.log("Testing Imagen 4.0...");
 
