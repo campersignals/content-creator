@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:up": "docker-compose -f docker-compose.dev.yml up -d",
+    "db:down": "docker-compose -f docker-compose.dev.yml down",
+    "deploy": "docker build --platform linux/amd64 -t internaix/content-gen-app:latest . && docker push internaix/content-gen-app:latest"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

@@ -42,8 +42,19 @@ export default function AuthorsPage() {
     // Combined state for display
     const state = editingAuthor ? updateState : createState
 
+    const [fetchError, setFetchError] = useState<string | null>(null)
+
     useEffect(() => {
-        getAuthors().then(setAuthors)
+        getAuthors()
+            .then(data => {
+                setAuthors(data)
+                setFetchError(null)
+            })
+            .catch(err => {
+                console.error("Failed to fetch authors:", err)
+                setFetchError("Fehler beim Laden der Autoren. Bitte Verbindung prüfen.")
+            })
+
         if (state.success) {
             // Clear form and edit state on success
             if (editingAuthor) setEditingAuthor(null)
@@ -152,7 +163,12 @@ export default function AuthorsPage() {
                 {/* List */}
                 <div className="space-y-4">
                     <h2 className="text-xl font-semibold mb-4">Vorhandene Autoren</h2>
-                    {authors.length === 0 && <p className="text-zinc-500 italic">Noch keine Autoren angelegt.</p>}
+                    {fetchError && (
+                        <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 mb-4">
+                            {fetchError}
+                        </div>
+                    )}
+                    {authors.length === 0 && !fetchError && <p className="text-zinc-500 italic">Noch keine Autoren angelegt.</p>}
                     {authors.map((author) => (
                         <div key={author.id} className={`bg-white dark:bg-zinc-900 p-4 rounded-xl border transition-all relative group ${editingAuthor?.id === author.id ? 'border-blue-500 ring-1 ring-blue-500' : 'border-zinc-200 dark:border-zinc-800'}`}>
                             <div className="absolute top-4 right-4 flex gap-2">

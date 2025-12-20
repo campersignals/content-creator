@@ -119,7 +119,7 @@ export async function checkVideoStatus(contentId: string) {
 
                 fs.writeFileSync(filePath, buffer)
 
-                const publicUrl = `/videos/${fileName}`
+                const publicUrl = `/api/videos/${fileName}`
 
                 await prisma.generatedContent.update({
                     where: { id: contentId },
